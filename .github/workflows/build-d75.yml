@@ -1,0 +1,46 @@
+name: Build D75 product page from supplier
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, 'Build D75 product') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch supplier data and build page
+        run: |
+          python - <<'PY'
+          import requests,re
+          from bs4 import BeautifulSoup
+          from pathlib import Path
+          u='https://www.ozgumak.com/details/7/3/-d-75-delme-unitesi'
+          r=requests.get(u,timeout=30,headers={'User-Agent':'Mozilla/5.0'})
+          r.raise_for_status()
+          soup=BeautifulSoup(r.text,'html.parser')
+          text='\n'.join(x.strip() for x in soup.stripped_strings)
+          start=text.find('TEKNİK ÖZELLİKLER:')
+          end=text.find('D75 DELME ÜNİTESİNİN GENEL ÖZELLİKLERİ',start)
+          if start<0: start=text.find('TEKNİK ÖZELLİKLER')
+          if end<0: end=start+5000
+          block=text[start:end]
+          lines=[]
+          for ln in block.splitlines():
+              ln=ln.strip().lstrip('*').strip()
+              if ':' in ln:
+                  k,v=ln.split(':',1); k=k.strip(); v=v.strip()
+                  if k and v and len(k)<80: lines.append((k,v))
+          if not lines: raise RuntimeError('D75 technical data could not be parsed')
+          Path('d75-source.txt').write_text(block,encoding='utf-8')
+          rows=''.join(f'<div class="row"><span>{k}</span><strong>{v}</strong></div>' for k,v in lines)
+          html=f'''<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Сверлильная головка D75 — TECINMAK</title><script src="https://cdn.tailwindcss.com"></script><style>.sticky-header{{position:sticky;top:0;z-index:100;background:#f97316}}.shell{{background:#fff;border-radius:20px;padding:1.5rem 2rem;border:1px solid #eef2f6;box-shadow:0 4px 20px rgba(0,0,0,.04)}}.photo{{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;min-height:420px;display:flex;align-items:center;justify-content:center;overflow:hidden}}.photo img{{width:100%;height:100%;object-fit:contain;max-height:520px}}.row{{display:flex;justify-content:space-between;gap:15px;padding:11px 15px;border-bottom:1px solid #eef2f6;font-size:.88rem}}.row:last-child{{border-bottom:0}}.row span{{color:#6b7280}}.row strong{{text-align:right;color:#1f2937}}.benefit{{background:#fff7ed;border-left:4px solid #f97316;border-radius:8px;padding:14px}}.benefit h3{{font-size:.95rem;font-weight:800;margin:0 0 5px}}.benefit p{{font-size:.82rem;color:#4b5563;margin:0;line-height:1.5}}.back{{color:#f97316;font-weight:700;text-decoration:none}}</style></head><body class="bg-gray-50 text-gray-900"><header class="sticky-header"><div class="bg-orange-500 border-b-2 border-black py-2"><div class="max-w-7xl mx-auto px-4 flex items-center justify-between"><a href="index.html" class="font-extrabold text-2xl text-black">TECIN<span class="text-white">MAK</span></a><div class="text-sm font-semibold">Оборудование и технологии для обработки металла</div></div></div></header><main class="max-w-7xl mx-auto px-4 sm:px-6 py-8"><a class="back" href="subpage.html?cat=avtomatizaciya&sub=mexanika&subsub=avtomatizaciya_mexanika_2&subsubsub=avtomatizaciya_mexanika_2_0">← НАЗАД К СВЕРЛИЛЬНЫМ ГОЛОВКАМ</a><section class="shell mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="photo"><img src="https://www.ozgumak.com/images/product/7dd0f217-4551-.jpg" alt="D 75 Delme Ünitesi"></div></div><div><div class="inline-flex bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full text-xs font-bold mb-3">АВТОМАТИЗАЦИЯ • МЕХАНИКА</div><h1 class="text-3xl md:text-4xl font-extrabold">Сверлильная головка D75</h1><p class="text-gray-600 mt-3 leading-relaxed">Технические характеристики перенесены с оригинальной страницы поставщика Özgümak.</p><div class="mt-5 border border-gray-200 rounded-xl overflow-hidden bg-white"><div class="bg-gray-50 px-4 py-3 font-extrabold">Технические характеристики — ÖZGÜMAK</div>{rows}</div><div class="mt-5"><a href="mailto:info@tecinmak.com?subject=D75%20Delme%20Ünitesi%20Teklif" class="block text-center bg-orange-500 text-white font-extrabold rounded-xl px-4 py-3">ПОЛУЧИТЬ КП</a></div></div></section><section class="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3"><div class="benefit"><h3>Серийное производство</h3><p>Решение для серийных операций обработки.</p></div><div class="benefit"><h3>Многофункциональная обработка</h3><p>Подходит для операций обработки, указанных поставщиком.</p></div><div class="benefit"><h3>Гидропневматическая система</h3><p>Рабочий ход и возврат выполняются в гидропневматической системе.</p></div><div class="benefit"><h3>Модульная установка</h3><p>Может использоваться как отдельный модуль или в составе системы.</p></div></section></main></body></html>'''
+          Path('product-d75.html').write_text(html,encoding='utf-8')
+          p=Path('subpage.html'); s=p.read_text(encoding='utf-8'); s=s.replace("href:'product-d100.html?model=D75'","href:'product-d75.html'"); s=s.replace("href:'product-d100.html?model=D60'","href:'product-d60.html'"); p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add product-d75.html d75-source.txt subpage.html
+          git commit -m 'Build D75 product page'
+          git push
