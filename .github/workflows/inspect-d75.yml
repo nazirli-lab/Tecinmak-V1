@@ -1,5 +1,5 @@
 name: Inspect D75 supplier page
-on: [workflow_dispatch]
+on: [push]
 jobs:
   inspect:
     runs-on: ubuntu-latest
