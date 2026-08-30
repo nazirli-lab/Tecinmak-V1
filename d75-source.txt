@@ -1,0 +1,18 @@
+TEKNİK ÖZELLİKLER:
+Delme kapasitesi:  Ø 12(çelikte)
+Tutucu tipi: ER 25 / DIN 6499
+Pens tutma çapı:Ø 0,5...-..16
+Elektrik motor(standart): 0.55 KW
+Elektrik motor(max .): 0.75 KW
+Max.Dev/Dak: 4000 rpm
+Ağırlık: 45 kg
+Toplam strok: 0 - 80
+Delme stroku: 0 - 50
+Silindir ön çapı: Ø50-Ø60
+Silindir arka çapı: Ø60-Ø32
+Pnömatik basınç: 6 bar
+Hava girişi: R 1/8 “-Ø4/6
+Hava tüketimi: 0,20 l/cm strok
+Silindir alanı: Ön: 000  Arka: 000
+Kayış : Poly V_..0 J – ..0 J
+İtme gücü : 6 bar-2880N
