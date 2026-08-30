@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch supplier data and build page
         run: |
+          python -m pip install requests beautifulsoup4
           python - <<'PY'
           import requests,re
           from bs4 import BeautifulSoup
