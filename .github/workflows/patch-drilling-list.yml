@@ -10,11 +10,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Patch drilling units section
+      - name: Patch drilling units section and URL handling
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           p=Path('subpage.html')
           s=p.read_text(encoding='utf-8')
           start=s.index('    /* TECINMAK_DRILLING_LIST_V2 */')
@@ -31,7 +30,13 @@ jobs:
       container.innerHTML=`<a href="subpage.html?cat=avtomatizaciya&sub=mexanika" class="back-btn">← МЕХАНИЧЕСКАЯ ОБРАБОТКА</a><h1 class="subpage-title mt-2">СВЕРЛИЛЬНЫЕ ГОЛОВКИ</h1><p class="breadcrumb">АВТОМАТИЗАЦИЯ / МЕХАНИЧЕСКАЯ ОБРАБОТКА / СТАНДАРТНЫЕ УЗЛЫ / СВЕРЛИЛЬНЫЕ ГОЛОВКИ</p><p class="description">Четыре модели. Выберите модель по изображению и кратким техническим характеристикам.</p><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-6">${cards}</div>`;
     }
 '''
-          p.write_text(s[:start]+new+s[end:],encoding='utf-8')
+          s=s[:start]+new+s[end:]
+          old="params.subsub === 'avtomatizaciya_mexanika_2' && params.subsubsub === 'avtomatizaciya_mexanika_2_0'"
+          newcond="params.subsub === 'avtomatizaciya_mexanika_2' && (params.subsubsub === 'avtomatizaciya_mexanika_2_0' || params.subsubsub === 'avtomatizaciya_mexanika_0')"
+          if old not in s:
+              raise SystemExit('Expected drilling URL condition not found')
+          s=s.replace(old,newcond,1)
+          p.write_text(s,encoding='utf-8')
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
