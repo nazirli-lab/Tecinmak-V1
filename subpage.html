@@ -527,7 +527,7 @@
 
     const container = document.getElementById('subpageContent');
 
-    if (params.cat === 'avtomatizaciya' && params.sub === 'mexanika' && params.subsub === 'avtomatizaciya_mexanika_2' && params.subsubsub === 'avtomatizaciya_mexanika_2_0') { renderDrillingUnits(); return; }
+    if (params.cat === 'avtomatizaciya' && params.sub === 'mexanika' && params.subsub === 'avtomatizaciya_mexanika_2' && (params.subsubsub === 'avtomatizaciya_mexanika_2_0' || params.subsubsub === 'avtomatizaciya_mexanika_0')) { renderDrillingUnits(); return; }
 
     // 4-cü səviyyə
     if (params.subsubsub && params.subsubsub !== 'show' && subData) {
